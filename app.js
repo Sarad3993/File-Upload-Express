@@ -24,8 +24,10 @@ const notFoundMiddleware = require('./middlewares/not-found');
 const errorHandlerMiddleware = require('./middlewares/error-handler');
 
 app.use(express.static('./public')); // this will make the public folder static so that we can access the files in the public folder from the frontend
+
 app.use(express.json());
-app.use(fileUpload());
+
+app.use(fileUpload({useTempFiles: true}));  // useTempFiles: true will save the file in the temp folder and then we can move it to the uploads folder
 
 app.get('/',(req,res)=>{
     res.send('<h1>Home Page</h1>');

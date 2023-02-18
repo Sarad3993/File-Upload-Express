@@ -3,9 +3,11 @@ const { StatusCodes } = require("http-status-codes");
 const CustomError = require('../errors'); 
 // here we are not destructuring every errors rather we are using the whole object ie CustomError and then below we access every error using dot operator like CustomError.BadRequestError
 // we can do this or we can follow the destructuring method
+const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
 
 
-const uploadProductImage = async (req, res) => {
+const uploadProductImageLocal = async (req, res) => {
     // console.log(req.files);
     // check if the file exists in the request or not 
     if (!req.files){
@@ -37,5 +39,27 @@ const uploadProductImage = async (req, res) => {
 
 };
 
+const uploadProductImageCloudinary = async (req,res) => {
 
-module.exports = {uploadProductImage};
+    // tempFilePath is the path of the image file in the temp folder which is provided by express-fileupload so still need express-fileupload even if we are using cloudinary to move the file to the cloud 
+    // use_filename: true will use the original name of the file
+    // folder: 'file-upload' will create a folder in the cloudinary account with the name file-upload and will save the file in that folder
+    // initially the uploaded file is saved in the temp folder and then later we move it to the cloudinary account
+    const result = await cloudinary.uploader.upload(req.files.image.tempFilePath, {
+        use_filename: true,
+        folder: 'file-upload',
+    });
+    // console.log(result);
+    
+    fs.unlinkSync(req.files.image.tempFilePath); 
+    // this will delete the file from the temp folder after it has been moved to the cloudinary account to save space and not store locally
+    // we are using sync version of the unlink function because we want to delete the file before sending the response to the frontend
+    
+    return res.status(StatusCodes.OK).json({image:{src:result.secure_url}}) 
+    // secure_url is the url of the image file in the cloudinary account which we have to send as a response to the frontend so that it can display the image
+
+
+};
+
+
+module.exports = {uploadProductImageCloudinary,};
