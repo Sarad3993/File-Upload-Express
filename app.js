@@ -6,13 +6,21 @@ const app = express();
 // database connect
 const connectDB = require('./db/connect');
 
+// routers 
+const productRouter = require('./routes/productRoutes');
+
 // import middlewares
 const notFoundMiddleware = require('./middlewares/not-found');
-const errorHandlerMiddleware = require('./middlewares/not-found');
+const errorHandlerMiddleware = require('./middlewares/error-handler');
+
+app.use(express.json());
 
 app.get('/',(req,res)=>{
     res.send('<h1>Home Page</h1>');
 });
+
+app.use('/api/v1/products', productRouter);
+
 
 // invoke middlewares here
 app.use(notFoundMiddleware);
