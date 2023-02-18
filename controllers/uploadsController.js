@@ -1,8 +1,30 @@
 const path = require("path");
 const { StatusCodes } = require("http-status-codes");
+const CustomError = require('../errors'); 
+// here we are not destructuring every errors rather we are using the whole object ie CustomError and then below we access every error using dot operator like CustomError.BadRequestError
+// we can do this or we can follow the destructuring method
+
 
 const uploadProductImage = async (req, res) => {
-  const productImage = req.files.image; // it gives the image file from the request
+    // console.log(req.files);
+    // check if the file exists in the request or not 
+    if (!req.files){
+        throw new CustomError.BadRequestError("No file uploaded");
+    }
+
+    const productImage = req.files.image; // it gives the image file from the request
+
+    // check if the file is an image or not (valid format)
+    if(!productImage.mimetype.startsWith('image')){
+        throw new CustomError.BadRequestError("Please upload an image file");
+    }
+
+    // check for file Size 
+    const maxSize = 1024 * 1024; // 1MB
+    if(productImage.size > maxSize){
+        throw new CustomError.BadRequestError('Please upload an image less than 1MB');
+    } 
+
   const imagePath = path.join(__dirname,'../public/uploads/'+ `${productImage.name}`); 
   // __dirname is a global variable that gives the path of the current file i.e uploadsController.js
   // we are joining the path of the current file with the path of the public folder and uploads folder
@@ -16,6 +38,4 @@ const uploadProductImage = async (req, res) => {
 };
 
 
-module.exports = {
-  uploadProductImage,
-};
+module.exports = {uploadProductImage};
